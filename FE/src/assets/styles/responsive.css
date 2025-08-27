@@ -1,0 +1,349 @@
+/* Responsive Design cho tất cả components */
+
+/* Mobile First - Base styles */
+:root {
+  --mobile-padding: 1rem;
+  --tablet-padding: 2rem;
+  --desktop-padding: 3rem;
+
+  --mobile-font-size: 14px;
+  --tablet-font-size: 16px;
+  --desktop-font-size: 18px;
+}
+
+/* Mobile styles (max-width: 768px) */
+@media (max-width: 768px) {
+  .container {
+    padding: var(--mobile-padding);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .header {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .nav-menu {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .movie-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .movie-card {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .booking-container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .booking-sidebar {
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .seat-map {
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0.5rem;
+  }
+
+  .seat {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1.5rem;
+    font-size: 16px;
+  }
+
+  .modal {
+    width: 95%;
+    max-width: 95%;
+    margin: 1rem;
+  }
+
+  .footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  /* Responsive hero slider cho mobile */
+  .homepage-hero-slider {
+    height: 50vh !important;
+    min-height: 300px !important;
+  }
+
+  .homepage-hero-slide {
+    height: 50vh !important;
+    min-height: 300px !important;
+  }
+
+  .homepage-hero-content {
+    padding: 1rem !important;
+    text-align: center !important;
+  }
+
+  .homepage-hero-content h1 {
+    font-size: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .homepage-hero-actions {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+    align-items: center !important;
+  }
+
+  .homepage-hero-actions .btn-primary,
+  .homepage-hero-actions .btn-outline {
+    width: 100% !important;
+    max-width: 200px !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+
+  .slider-btn {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .slider-indicators {
+    bottom: 1rem !important;
+  }
+
+  .slider-dot {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  /* Mobile: chỉ hiển thị poster */
+  @media (max-width: 768px) {
+    .homepage-hero-content {
+      display: none !important;
+    }
+
+    .homepage-hero-slider {
+      height: 200px !important;
+      min-height: 200px !important;
+    }
+
+    .homepage-hero-slide {
+      height: 200px !important;
+      min-height: 200px !important;
+    }
+
+    .slider-btn,
+    .slider-indicators {
+      display: none !important;
+    }
+  }
+
+  /* Responsive header adjustments */
+  .header-modern {
+    position: relative;
+    z-index: 100;
+  }
+
+  .header-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-logo-text {
+    font-size: 1.1rem;
+  }
+
+  /* Mobile menu specific styles */
+  .header-nav {
+    display: none;
+  }
+
+  .header-actions {
+    display: none;
+  }
+
+  /* Ensure mobile menu is properly positioned */
+  .homepage-app {
+    padding-top: 0;
+  }
+}
+
+/* Tablet styles (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    padding: var(--tablet-padding);
+    max-width: 100%;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .booking-container {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  .booking-sidebar {
+    width: 300px;
+  }
+
+  .seat-map {
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.75rem;
+  }
+
+  .seat {
+    width: 35px;
+    height: 35px;
+  }
+
+  /* Hiển thị lại hero slider trên tablet */
+  .homepage-hero-slider {
+    display: block !important;
+  }
+}
+
+/* Tablet styles (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    padding: var(--tablet-padding);
+    max-width: 100%;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .booking-container {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  .booking-sidebar {
+    width: 300px;
+  }
+
+  .seat-map {
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.75rem;
+  }
+
+  .seat {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* Desktop styles (> 1024px) */
+@media (min-width: 1025px) {
+  .container {
+    padding: var(--desktop-padding);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+  }
+
+  .booking-container {
+    flex-direction: row;
+    gap: 2rem;
+  }
+
+  .booking-sidebar {
+    width: 350px;
+  }
+
+  .seat-map {
+    grid-template-columns: repeat(14, 1fr);
+    gap: 1rem;
+  }
+
+  .seat {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .seat:hover {
+    transform: none;
+  }
+
+  .seat:active {
+    transform: scale(0.9);
+  }
+}
+
+/* Landscape orientation */
+@media (max-width: 768px) and (orientation: landscape) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .nav-menu {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .movie-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .movie-poster {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Print styles */
+@media print {
+  .header,
+  .footer,
+  .nav-menu {
+    display: none;
+  }
+
+  .booking-container {
+    flex-direction: column;
+  }
+}
