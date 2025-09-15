@@ -2,16 +2,17 @@ const mongoose = require("mongoose");
 
 const nguoiDungSchema = new mongoose.Schema({
   MAKH: { type: String, unique: true },
-  TENKH: String,
+  HOTEN: String,
   EMAIL: { type: String, required: true, unique: true },
-  SDT: { type: String, required: true, unique: true },
+  SDT: { type: String, unique: true },
   MATKHAU: { type: String, required: true },
   NGAYDANGKY: { type: Date, default: Date.now },
-  role: {
+  VAITRO: {
     type: String,
-    enum: ["user", "admin"],
+    enum: ["user", "admin", "manager"],
     default: "user",
   },
+  MARAP: { type: String, default: null },
 });
 
 // Tạo MAKH tự động trước khi lưu

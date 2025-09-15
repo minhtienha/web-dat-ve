@@ -23,7 +23,7 @@ const initialForm = {
   SAPCHIEU: false,
 };
 
-const MovieManager = () => {
+const ManagerMovieManager = () => {
   const [movies, setMovies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const moviesPerPage = 10;
@@ -373,4 +373,4 @@ const MovieManager = () => {
   );
 };
 
-export default MovieManager;
+export default ManagerMovieManager;

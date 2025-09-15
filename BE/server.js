@@ -12,14 +12,13 @@ const nguoiDungRoutes = require("./routes/nguoi_dung");
 const phimRoutes = require("./routes/phim");
 const veRoutes = require("./routes/ve");
 const gheRoutes = require("./routes/ghe");
-const chiTietSuatRoutes = require("./routes/chi_tiet_suat_chieu");
 const danhGiaRoutes = require("./routes/danh_gia");
 const rapChieuRoutes = require("./routes/rap_chieu");
 const chiTietGheRoutes = require("./routes/chi_tiet_ghe");
-const suatChieuRoutes = require("./routes/suat_chieu");
 const phongChieuRoutes = require("./routes/phong_chieu");
 const paymentRoutes = require("./routes/payment");
 const phimController = require("./controllers/phimController");
+const suatChieuRoutes = require("./routes/suat_chieu");
 
 // ===== 3. KHAI BÁO APP EXPRESS ===== //
 const app = express();
@@ -35,13 +34,13 @@ app.use("/api/nguoidung", nguoiDungRoutes);
 app.use("/api/phim", phimRoutes);
 app.use("/api/ve", veRoutes);
 app.use("/api/ghe", gheRoutes);
-app.use("/api/chitietsuatchieu", chiTietSuatRoutes);
 app.use("/api/rapchieu", rapChieuRoutes);
 app.use("/api/chitietghe", chiTietGheRoutes);
-app.use("/api/suatchieu", suatChieuRoutes);
 app.use("/api/phongchieu", phongChieuRoutes);
 app.use("/api/danhgia", danhGiaRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/thanh-toan", require("./routes/thanh_toan"));
+app.use("/api/suatchieu", suatChieuRoutes);
 
 // ===== 6. KẾT NỐI DATABASE ===== //
 mongoose

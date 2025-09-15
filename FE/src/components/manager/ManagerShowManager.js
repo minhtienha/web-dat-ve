@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
 import {
   getAllShowDetails,
   addShow,
   updateShow,
   deleteShow,
   getMovies,
-  getTheaters,
   getRoomsByTheater,
 } from "../../services/api";
 
@@ -13,13 +13,13 @@ const showsPerPage = 10;
 
 const initialForm = {
   MAPHIM: "",
-  MARAP: "",
   MAPHONG: "",
   NGAYCHIEU: "",
   GIOBATDAU: "",
 };
 
-const ShowManager = () => {
+const ManagerShowManager = () => {
+  const { user } = useContext(AuthContext);
   const [shows, setShows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -29,19 +29,25 @@ const ShowManager = () => {
   const [showDelete, setShowDelete] = useState(false);
 
   const [movies, setMovies] = useState([]);
-  const [theaters, setTheaters] = useState([]);
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
-    fetchShows();
-    fetchMovies();
-    fetchTheaters();
-  }, []);
+    if (user && user.MARAP) {
+      fetchShows();
+      fetchMovies();
+      fetchRooms(user.MARAP);
+    }
+  }, [user]);
 
   const fetchShows = async () => {
     try {
       const data = await getAllShowDetails();
-      setShows(data || []);
+      console.log("Dữ liệu suất chiếu từ backend:", data); // Debug log
+      // Filter shows by manager's theater
+      const filteredShows = data.filter(
+        (show) => show.MAPHONG?.MARAP?.MARAP === user.MARAP
+      );
+      setShows(filteredShows || []);
     } catch (error) {
       console.error("Lỗi fetch shows: ", error);
       alert("Không thể tải suất chiếu. Kiểm tra server!");
@@ -54,11 +60,6 @@ const ShowManager = () => {
     setMovies(data || []);
   };
 
-  const fetchTheaters = async () => {
-    const data = await getTheaters();
-    setTheaters(data || []);
-  };
-
   const fetchRooms = async (maRap) => {
     if (!maRap) {
       setRooms([]);
@@ -67,11 +68,6 @@ const ShowManager = () => {
     const data = await getRoomsByTheater(maRap);
     setRooms(data || []);
   };
-
-  useEffect(() => {
-    if (form.MARAP) fetchRooms(form.MARAP);
-    else setRooms([]);
-  }, [form.MARAP]);
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
@@ -103,9 +99,15 @@ const ShowManager = () => {
 
   const handleEdit = (show) => {
     console.log("Editing show:", show); // Debug log
+    console.log("Dữ liệu show để chỉnh sửa:", {
+      MAPHIM: show.MAPHIM?.MAPHIM,
+      MAPHONG: show.MAPHONG?.MAPHONG,
+      NGAYCHIEU: show.NGAYCHIEU,
+      GIOBATDAU: show.GIOBATDAU,
+      GIOKETTHUC: show.GIOKETTHUC,
+    });
     setForm({
       MAPHIM: show.MAPHIM?.MAPHIM || "",
-      MARAP: show.MAPHONG?.MARAP?.MARAP || "",
       MAPHONG: show.MAPHONG?.MAPHONG || "",
       NGAYCHIEU: show.NGAYCHIEU?.slice(0, 10) || "",
       GIOBATDAU: show.GIOBATDAU || "",
@@ -117,7 +119,6 @@ const ShowManager = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    if (e.target.name === "MARAP") setForm((f) => ({ ...f, MAPHONG: "" }));
   };
 
   const toMinutes = (time) => {
@@ -184,23 +185,18 @@ const ShowManager = () => {
       }
     }
     try {
+      const endTime = getEndTime(form.GIOBATDAU, selectedMovie.THOILUONG || 0);
       if (isEdit && selectedShow) {
-        const endTime = getEndTime(
-          form.GIOBATDAU,
-          selectedMovie.THOILUONG || 0
-        );
-        await updateShow(selectedShow.MASUAT, {
+        const updateData = {
           NGAYCHIEU: form.NGAYCHIEU,
           MAPHONG: form.MAPHONG,
           MAPHIM: form.MAPHIM,
           GIOBATDAU: form.GIOBATDAU,
           GIOKETTHUC: endTime,
-        });
+        };
+        console.log("Dữ liệu gửi để cập nhật:", updateData);
+        await updateShow(selectedShow.MASUAT, updateData);
       } else {
-        const endTime = getEndTime(
-          form.GIOBATDAU,
-          selectedMovie.THOILUONG || 0
-        );
         const suatChieuData = {
           NGAYCHIEU: form.NGAYCHIEU,
           MAPHONG: form.MAPHONG,
@@ -208,13 +204,21 @@ const ShowManager = () => {
           GIOBATDAU: form.GIOBATDAU,
           GIOKETTHUC: endTime,
         };
+        console.log("Dữ liệu gửi để thêm:", suatChieuData);
         await addShow(suatChieuData);
       }
       setShowForm(false);
-      fetchShows();
     } catch (error) {
       console.error("Lỗi khi lưu suất chiếu:", error);
       alert("Không thể lưu suất chiếu. Vui lòng thử lại!");
+      return;
+    }
+    // Fetch shows after successful save
+    try {
+      await fetchShows();
+    } catch (error) {
+      console.error("Lỗi khi tải lại danh sách suất chiếu:", error);
+      // Không hiển thị alert lỗi vì dữ liệu đã được lưu thành công
     }
   };
 
@@ -247,7 +251,6 @@ const ShowManager = () => {
         <thead className="bg-blue-300">
           <tr>
             <th className="border px-4 py-3 text-left w-60">Tên phim</th>
-            <th className="border px-4 py-3 text-left">Rạp</th>
             <th className="border px-4 py-3 text-left">Phòng</th>
             <th className="border px-4 py-3 text-left">Ngày</th>
             <th className="border px-4 py-3 text-left">Giờ</th>
@@ -257,7 +260,7 @@ const ShowManager = () => {
         <tbody>
           {currentShows.length === 0 ? (
             <tr>
-              <td colSpan={6} className="text-center py-8 text-gray-400">
+              <td colSpan={5} className="text-center py-8 text-gray-400">
                 Không có dữ liệu suất chiếu.
               </td>
             </tr>
@@ -266,9 +269,6 @@ const ShowManager = () => {
               <tr key={idx} className="hover:bg-blue-50">
                 <td className="border px-4 py-4 w-60 align-middle break-words whitespace-pre-line">
                   {s.MAPHIM?.TENPHIM || ""}
-                </td>
-                <td className="border px-4 py-4 align-middle">
-                  {s.MAPHONG?.MARAP?.TENRAP || ""}
                 </td>
                 <td className="border px-4 py-4 align-middle">
                   {s.MAPHONG?.TENPHONG || ""}
@@ -346,23 +346,6 @@ const ShowManager = () => {
               </select>
             </div>
             <div className="mb-3">
-              <label className="block mb-1 font-semibold">Rạp</label>
-              <select
-                name="MARAP"
-                value={form.MARAP}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-                required
-              >
-                <option value="">-- Chọn rạp --</option>
-                {theaters.map((r) => (
-                  <option key={r.MARAP} value={r.MARAP}>
-                    {r.TENRAP}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-3">
               <label className="block mb-1 font-semibold">Phòng</label>
               <select
                 name="MAPHONG"
@@ -370,7 +353,6 @@ const ShowManager = () => {
                 onChange={handleChange}
                 className="w-full border px-3 py-2 rounded"
                 required
-                disabled={!form.MARAP}
               >
                 <option value="">-- Chọn phòng --</option>
                 {rooms.map((p) => (
@@ -449,4 +431,4 @@ const ShowManager = () => {
   );
 };
 
-export default ShowManager;
+export default ManagerShowManager;

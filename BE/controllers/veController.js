@@ -8,21 +8,96 @@ const { io } = require("../server");
 // [GET] Lấy danh sách vé
 exports.layDanhSachVe = async (req, res) => {
   try {
-    const danhSachVe = await Ve.find().populate([
-      {
+    const danhSachVe = await Ve.find()
+      .populate({
         path: "MASUAT",
         model: "SuatChieu",
         localField: "MASUAT",
         foreignField: "MASUAT",
-      },
-      {
+        populate: [
+          {
+            path: "MAPHIM",
+            model: "Phim",
+            localField: "MAPHIM",
+            foreignField: "MAPHIM",
+            select: "TENPHIM POSTER",
+          },
+          {
+            path: "MAPHONG",
+            model: "PhongChieu",
+            localField: "MAPHONG",
+            foreignField: "MAPHONG",
+            populate: {
+              path: "MARAP",
+              model: "RapChieu",
+              localField: "MARAP",
+              foreignField: "MARAP",
+              select: "TENRAP TINHTHANH",
+            },
+          },
+        ],
+      })
+      .populate({
         path: "MAKH",
         model: "NguoiDung",
         localField: "MAKH",
         foreignField: "MAKH",
-      },
-    ]);
-    res.json(danhSachVe);
+        select: "TENKH EMAIL",
+      })
+      .sort({ NGAYMUA: -1 });
+
+    const formattedTickets = await Promise.all(
+      danhSachVe.map(async (ticket) => {
+        const masuatCode = ticket.MASUAT?.MASUAT || ticket.MASUAT;
+
+        // Lấy thông tin suất chiếu + phim
+        const chiTietSuat = await ChiTietSuat.findOne({
+          MASUAT: masuatCode,
+        }).populate({
+          path: "MAPHIM",
+          model: "Phim",
+          localField: "MAPHIM",
+          foreignField: "MAPHIM",
+          select: "TENPHIM POSTER",
+        });
+
+        // Lấy danh sách ghế đã đặt cho vé này
+        const gheList = await ChiTietGhe.find({ MAVE: ticket.MAVE }).populate({
+          path: "MAGHE",
+          model: "Ghe",
+          localField: "MAGHE",
+          foreignField: "MAGHE",
+          select: "HANG SO",
+        });
+
+        const magheStr = gheList
+          .map((g) => `${g.MAGHE?.HANG || ""}${g.MAGHE?.SO || ""}`)
+          .join(", ");
+
+        return {
+          id: ticket._id,
+          ma_ve: ticket.MAVE,
+          makh: ticket.MAKH?.MAKH || "",
+          tenkh: ticket.MAKH?.TENKH || "",
+          tenphim: ticket.MASUAT?.MAPHIM?.TENPHIM || "Không xác định",
+          poster: ticket.MASUAT?.MAPHIM?.POSTER || "",
+          tenrap: ticket.MASUAT?.MAPHONG?.MARAP?.TENRAP || "Không xác định",
+          tinhThanh: ticket.MASUAT?.MAPHONG?.MARAP?.TINHTHANH || "",
+          tenphong: ticket.MASUAT?.MAPHONG?.TENPHONG || "Không xác định",
+          ngaychieu: ticket.MASUAT?.NGAYCHIEU || "",
+          giobatdau: ticket.MASUAT?.GIOBATDAU || "",
+          gioketthuc: ticket.MASUAT?.GIOKETTHUC || "",
+          maghe: magheStr || "",
+          giave: ticket.GIAVE || 0,
+          trang_thai: ticket.TRANGTHAI || "confirmed",
+          ngaydat: ticket.NGAYMUA || new Date(),
+          maphim: ticket.MASUAT?.MAPHIM?._id || "",
+          marap: ticket.MASUAT?.MAPHONG?.MARAP?._id || "",
+        };
+      })
+    );
+
+    res.json(formattedTickets);
   } catch (err) {
     res
       .status(500)

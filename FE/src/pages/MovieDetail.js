@@ -63,8 +63,8 @@ const MovieDetail = () => {
       };
       setReviews((prev) => [newItem, ...prev]);
       // Optionally refetch để đồng bộ nếu cần:
-      // const fresh = await getReviewsByMovie(payload.MAPHIM);
-      // setReviews(fresh.map(mapReviewToView));
+      const fresh = await getReviewsByMovie(payload.MAPHIM);
+      setReviews(fresh.map(mapReviewToView));
       setNewRating(0);
       setNewComment("");
     } catch (err) {
@@ -88,57 +88,34 @@ const MovieDetail = () => {
         let showtimesData = [];
         try {
           const showtimesResponse = await axios.get(
-            `http://localhost:5000/api/chitietsuatchieu/theo-phim/${id
+            `http://localhost:5000/api/suatchieu/theo-phim/${id
               .trim()
               .toUpperCase()}`
           );
           showtimesData = showtimesResponse.data;
+          console.log("Dữ liệu suất chiếu:", showtimesData); // Debug log
         } catch (errShowtime) {
+          console.error("Lỗi khi lấy suất chiếu:", errShowtime);
           // Nếu 404 thì không cần báo lỗi, chỉ để mảng rỗng
           if (errShowtime.response?.status !== 404) {
-            console.error("Lỗi khi lấy suất chiếu:", errShowtime);
+            console.error("Chi tiết lỗi:", errShowtime.response?.data);
           }
           showtimesData = [];
         }
 
-        // 3. Ghép thêm thông tin chi tiết cho từng suất chiếu (nếu có)
-        const showtimesWithDetails = await Promise.all(
-          showtimesData.map(async (showtime) => {
-            try {
-              const suatChieuResponse = await axios.get(
-                `http://localhost:5000/api/suatchieu/chi-tiet/${showtime.MASUAT.MASUAT}`,
-                { timeout: 10000 }
-              );
-              const phongChieuResponse = await axios.get(
-                `http://localhost:5000/api/phongchieu/chi-tiet/${suatChieuResponse.data.MAPHONG.MAPHONG}`,
-                { timeout: 10000 }
-              );
-              const rapChieuResponse = await axios.get(
-                `http://localhost:5000/api/rapchieu/chi-tiet/${phongChieuResponse.data.MARAP.MARAP}`,
-                { timeout: 10000 }
-              );
-              return {
-                ...showtime,
-                room: phongChieuResponse.data.TENPHONG,
-                theater: rapChieuResponse.data.TENRAP,
-                location: rapChieuResponse.data.DIACHI,
-                format: showtime.DINHDANG || "HMT",
-                maPhong: phongChieuResponse.data.MAPHONG,
-                maSuat: suatChieuResponse.data.MASUAT,
-              };
-            } catch (err) {
-              return {
-                ...showtime,
-                room: "Unknown",
-                theater: "Unknown",
-                location: "Unknown",
-                format: "HMT",
-                maPhong: undefined,
-                maSuat: showtime.MASUAT?.MASUAT,
-              };
-            }
-          })
-        );
+        // 3. Sử dụng dữ liệu đã được populate từ backend
+        const showtimesWithDetails = showtimesData.map((showtime) => {
+          console.log("Showtime data:", showtime);
+          return {
+            ...showtime,
+            room: showtime.MAPHONG?.TENPHONG || "Unknown",
+            theater: showtime.MAPHONG?.MARAP?.TENRAP || "Unknown",
+            location: showtime.MAPHONG?.MARAP?.DIACHI || "Unknown",
+            format: showtime.DINHDANG || "HMT",
+            maPhong: showtime.MAPHONG?.MAPHONG,
+            maSuat: showtime.MASUAT,
+          };
+        });
 
         setShowtimes(showtimesWithDetails);
         setError(null);
@@ -228,12 +205,12 @@ const MovieDetail = () => {
           title: movie.TENPHIM,
           images: movie.HINHANH,
           time: showtime.GIOBATDAU,
-          date: showtime.MASUAT?.NGAYCHIEU,
+          date: showtime.NGAYCHIEU,
           theater: showtime.theater,
           room: showtime.room,
         },
-        maPhong: showtime.maPhong || showtime.MASUAT?.MAPHONG,
-        maSuat: showtime.maSuat || showtime.MASUAT?.MASUAT,
+        maPhong: showtime.maPhong || showtime.MAPHONG,
+        maSuat: showtime.maSuat || showtime.MASUAT,
       },
     });
   };
@@ -244,6 +221,15 @@ const MovieDetail = () => {
     } else {
       alert("Trailer không khả dụng");
     }
+  };
+
+  // Helper function to get local date string YYYY-MM-DD
+  const toLocalDateString = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   if (loading) {
@@ -414,7 +400,7 @@ const MovieDetail = () => {
                     d.setDate(d.getDate() + i);
                     d.setHours(0, 0, 0, 0);
                     return {
-                      key: d.toISOString().slice(0, 10),
+                      key: toLocalDateString(d),
                       label: d.toLocaleDateString("vi-VN", {
                         weekday: "short",
                         day: "2-digit",
@@ -424,11 +410,7 @@ const MovieDetail = () => {
                   });
                   const datesWithShows = new Set(
                     showtimes
-                      .map((s) =>
-                        new Date(s.MASUAT?.NGAYCHIEU || s.NGAYCHIEU)
-                          .toISOString()
-                          .slice(0, 10)
-                      )
+                      .map((s) => toLocalDateString(s.NGAYCHIEU))
                       .filter(Boolean)
                   );
                   return (
@@ -458,10 +440,17 @@ const MovieDetail = () => {
                 })()}
 
                 {(() => {
+                  // Helper function to get local date string YYYY-MM-DD
+                  const toLocalDateString = (date) => {
+                    const d = new Date(date);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    return `${year}-${month}-${day}`;
+                  };
+
                   const filtered = showtimes.filter((s) => {
-                    const k = new Date(s.MASUAT?.NGAYCHIEU || s.NGAYCHIEU)
-                      .toISOString()
-                      .slice(0, 10);
+                    const k = toLocalDateString(s.NGAYCHIEU);
                     return k === selectedDate;
                   });
 
@@ -508,14 +497,7 @@ const MovieDetail = () => {
                               className="btn-outline-dark"
                               onClick={() => handleSelectShowtime(st)}
                             >
-                              {new Date(st.GIOBATDAU).toLocaleTimeString(
-                                "vi-VN",
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  timeZone: "UTC",
-                                }
-                              )}
+                              {st.GIOBATDAU}
                             </button>
                           ))}
                         </div>

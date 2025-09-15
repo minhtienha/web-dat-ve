@@ -1,126 +1,3 @@
-// import React, { useState, useEffect, useContext } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { CheckTicketBooked, updateUser } from "../services/api";
-// import { AuthContext } from "../contexts/AuthContext.js";
-// import AccountSidebar from "../components/account/AccountSidebar";
-// import ProfileForm from "../components/account/ProfileForm";
-// import TicketCard from "../components/account/TicketCard";
-// import AccountReviewsComponent from "../components/account/AccountReviewsComponent";
-
-// const Account = () => {
-//   const navigate = useNavigate();
-//   const [user, setUser] = useState(null);
-//   const [activeSection, setActiveSection] = useState("account");
-//   const [tickets, setTickets] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState("");
-
-//   useEffect(() => {
-//     window.scrollTo({ top: 0, behavior: "smooth" });
-//   }, [activeSection]);
-
-//   useEffect(() => {
-//     const storedUser = localStorage.getItem("user");
-//     if (!storedUser) {
-//       navigate("/login");
-//       return;
-//     }
-
-//     const userData = JSON.parse(storedUser);
-//     setUser(userData);
-
-//     const fetchTickets = async () => {
-//       if (!userData?.MAKH) {
-//         setError("Không tìm thấy thông tin tài khoản");
-//         setLoading(false);
-//         return;
-//       }
-//       try {
-//         const response = await CheckTicketBooked(userData.MAKH);
-//         setTickets(response || []);
-//         setLoading(false);
-//       } catch (err) {
-//         console.error("Lỗi khi lấy vé đã đặt:", err);
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchTickets();
-//   }, [navigate]);
-
-//   const handleSaveProfile = async (updatePayload) => {
-//     const updated = await updateUser(user.MAKH, updatePayload);
-//     localStorage.setItem(
-//       "user",
-//       JSON.stringify({ ...updated, MATKHAU: undefined })
-//     );
-//     setUser({ ...updated, MATKHAU: undefined });
-//   };
-
-//   if (!user) {
-//     return (
-//       <div className="min-h-screen bg-background flex items-center justify-center">
-//         <div className="text-gray-500">Đang tải...</div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="min-h-screen bg-gray-100">
-//       <div className="container mx-auto py-4 px-4 md:px-32">
-//         <div className="flex flex-col md:flex-row gap-6">
-//           <AccountSidebar
-//             activeSection={activeSection}
-//             setActiveSection={setActiveSection}
-//             user={user}
-//           />
-
-//           <div className="flex-1">
-//             <div className="bg-white rounded-lg shadow-md p-6">
-//               {error && <p className="text-red-500 mb-4">{error}</p>}
-//               {loading && (
-//                 <div className="text-center py-8 text-gray-500">
-//                   <p>Đang tải dữ liệu...</p>
-//                 </div>
-//               )}
-
-//               {!loading && activeSection === "account" && (
-//                 <ProfileForm user={user} onSave={handleSaveProfile} />
-//               )}
-
-//               {!loading && activeSection === "tickets" && (
-//                 <div>
-//                   <div className="mb-6">
-//                     <h1 className="text-2xl font-bold text-gray-800">
-//                       Vé đã đặt
-//                     </h1>
-//                   </div>
-//                   {tickets.length === 0 ? (
-//                     <div className="text-center py-8 text-gray-500">
-//                       <p className="text-6xl mb-4">🎫</p>
-//                       <p>Hiện chưa có vé nào được đặt</p>
-//                     </div>
-//                   ) : (
-//                     <div className="space-y-4">
-//                       {tickets.map((ticket, index) => (
-//                         <TicketCard key={index} ticket={ticket} />
-//                       ))}
-//                     </div>
-//                   )}
-//                 </div>
-//               )}
-
-//               {!loading && activeSection === "reviews" && (
-//                 <AccountReviewsComponent />
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
 // export default Account;
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
@@ -138,14 +15,17 @@ import { validateInput } from "../utils/validation";
 
 const Account = () => {
   const navigate = useNavigate();
-  const { user: authUser, logout } = useContext(AuthContext);
+  const {
+    user: authUser,
+    setUser: setAuthUser,
+    logout,
+  } = useContext(AuthContext);
 
   // State chung cho tất cả sections
   const [user, setUser] = useState(null);
   const [activeSection, setActiveSection] = useState("account");
   const [tickets, setTickets] = useState([]);
   const [reviews, setReviews] = useState([]);
-  // const [movies, setMovies] = useState([]); // XÓA DÒNG NÀY
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -178,7 +58,7 @@ const Account = () => {
 
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      setEditName(userData?.TENKH || "");
+      setEditName(userData?.HOTEN || "");
       setEditPhone(userData?.SDT || "");
 
       if (!userData?.MAKH) {
@@ -188,16 +68,13 @@ const Account = () => {
       }
 
       try {
-        // Fetch tất cả dữ liệu cùng lúc để giảm số lượng request
         const [ticketsData, reviewsData /*, moviesData*/] = await Promise.all([
           CheckTicketBooked(userData.MAKH),
           getReviewsByUser(userData.MAKH),
-          // getMovies(), // XÓA DÒNG NÀY
         ]);
 
         setTickets(ticketsData || []);
         setReviews(processReviewsData(reviewsData));
-        // setMovies(Array.isArray(moviesData) ? moviesData : []); // XÓA DÒNG NÀY
       } catch (err) {
         console.error("Lỗi khi tải dữ liệu:", err);
         setError("Không thể tải dữ liệu");
@@ -260,6 +137,7 @@ const Account = () => {
         JSON.stringify({ ...updated, MATKHAU: undefined })
       );
       setUser({ ...updated, MATKHAU: undefined });
+      setAuthUser({ ...updated, MATKHAU: undefined });
 
       setProfileMsg("Cập nhật thành công");
       setIsEditing(false);
@@ -275,7 +153,7 @@ const Account = () => {
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditName(user?.TENKH || "");
+    setEditName(user?.HOTEN || "");
     setEditPhone(user?.SDT || "");
     setEditPassword("");
     setProfileMsg("");
@@ -459,10 +337,10 @@ const Account = () => {
             <div className="bg-white rounded-lg shadow-md p-4">
               <div className="text-center mb-6">
                 <div className="w-24 h-24 rounded-full bg-red-500 text-white flex items-center justify-center text-3xl font-bold mx-auto mb-3">
-                  {user?.TENKH?.charAt(0) || "?"}
+                  {user?.HOTEN?.charAt(0) || "?"}
                 </div>
                 <h2 className="text-xl font-semibold">
-                  {user?.TENKH || "Không xác định"}
+                  {user?.HOTEN || "Không xác định"}
                 </h2>
                 <p className="text-gray-500">{user?.EMAIL}</p>
               </div>
@@ -519,7 +397,7 @@ const Account = () => {
                             onChange={(e) => setEditName(e.target.value)}
                           />
                         ) : (
-                          <p className="font-medium">{user?.TENKH || "--"}</p>
+                          <p className="font-medium">{user?.HOTEN || "--"}</p>
                         )}
                       </div>
                       <div className="p-4 border rounded-lg">
@@ -573,7 +451,7 @@ const Account = () => {
                             onClick={() => {
                               if (validateProfile()) {
                                 handleSaveProfile({
-                                  TENKH: editName.trim(),
+                                  HOTEN: editName.trim(),
                                   SDT: editPhone.trim(),
                                   ...(editPassword && {
                                     MATKHAU: editPassword,
@@ -618,62 +496,136 @@ const Account = () => {
                           key={index}
                           className="border rounded-lg p-4 hover:shadow-lg transition-shadow"
                         >
-                          <div className="flex flex-col md:flex-row gap-6">
-                            <img
-                              src={ticket.poster}
-                              alt={ticket.tenphim}
-                              className="w-full md:w-32 h-48 md:h-44 object-cover rounded-lg"
-                            />
-                            <div className="flex-1 space-y-2">
-                              <h2 className="text-xl font-bold">
+                          <div className="bg-white flex flex-row gap-6 p-4 rounded-lg shadow">
+                            {/* Poster */}
+                            <div className="flex-shrink-0">
+                              <img
+                                src={ticket.poster}
+                                alt={ticket.tenphim}
+                                className="w-36 h-48 object-cover rounded-lg"
+                              />
+                            </div>
+
+                            {/* Thông tin vé */}
+                            <div className="flex-1">
+                              <h2 className="text-lg font-bold mb-3">
                                 {ticket.tenphim}
                               </h2>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                  <p className="text-sm text-gray-500">
-                                    Ngày chiếu
-                                  </p>
-                                  <p className="font-medium">
-                                    {new Date(
-                                      ticket.ngaychieu
-                                    ).toLocaleDateString("vi-VN")}
-                                  </p>
+                              <hr className="mb-4" />
+
+                              {/* Grid 2 cột thông tin + 1 cột QR */}
+                              <div className="grid grid-cols-3 gap-x-8 gap-y-4 items-start">
+                                {/* Cột 1: Ngày chiếu, Rạp, Ghế */}
+                                <div className="space-y-4">
+                                  <div>
+                                    <p className="text-sm text-gray-500">
+                                      Ngày chiếu
+                                    </p>
+                                    <p className="font-medium">
+                                      {new Date(
+                                        ticket.ngaychieu
+                                      ).toLocaleDateString("vi-VN", {
+                                        weekday: "long",
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                      })}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-gray-500">Rạp</p>
+                                    <p className="font-medium">
+                                      {ticket.tenrap}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-gray-500">Ghế</p>
+                                    <p className="font-medium">
+                                      {ticket.maghe}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">
-                                    Giờ chiếu
-                                  </p>
-                                  <p className="font-medium">
-                                    {new Date(
-                                      ticket.giobatdau
-                                    ).toLocaleTimeString("vi-VN", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                      timeZone: "UTC",
-                                    })}
-                                  </p>
+
+                                {/* Cột 2: Giờ chiếu, Phòng, Giá vé */}
+                                <div className="space-y-4">
+                                  <div>
+                                    <p className="text-sm text-gray-500">
+                                      Giờ chiếu
+                                    </p>
+                                    <p className="font-medium">
+                                      {new Date(
+                                        ticket.giobatdau
+                                      ).toLocaleTimeString("vi-VN", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}{" "}
+                                      -{" "}
+                                      {new Date(
+                                        ticket.gioketthuc
+                                      ).toLocaleTimeString("vi-VN", {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-gray-500">
+                                      Phòng
+                                    </p>
+                                    <p className="font-medium">
+                                      {ticket.tenphong}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm text-gray-500">
+                                      Giá vé
+                                    </p>
+                                    <p className="font-medium text-red-500">
+                                      {ticket.giave}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Rạp</p>
-                                  <p className="font-medium">{ticket.tenrap}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Phòng</p>
-                                  <p className="font-medium">
-                                    {ticket.tenphong}
+
+                                {/* Cột 3: QR code */}
+                                <div className="flex flex-col items-center">
+                                  <p className="text-sm text-gray-500 mb-2">
+                                    Mã QR
                                   </p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">Ghế</p>
-                                  <p className="font-medium">{ticket.maghe}</p>
-                                </div>
-                                <div>
-                                  <p className="text-sm text-gray-500">
-                                    Giá vé
-                                  </p>
-                                  <p className="font-medium text-red-500">
-                                    {ticket.giave}
-                                  </p>
+                                  <div className="bg-white rounded-lg shadow p-1">
+                                    <img
+                                      alt={`QR code vé ${ticket.mave}`}
+                                      className="w-36 h-36"
+                                      src={`https://quickchart.io/qr?text=${encodeURIComponent(
+                                        JSON.stringify({
+                                          ma_ve: ticket.ma_ve,
+                                          makh: ticket.makh,
+                                          tenphim: ticket.tenphim,
+                                          tenrap: ticket.tenrap,
+                                          tenphong: ticket.tenphong,
+                                          ngaychieu: new Date(
+                                            ticket.ngaychieu
+                                          ).toLocaleDateString("vi-VN"),
+                                          giobatdau: new Date(
+                                            ticket.giobatdau
+                                          ).toLocaleTimeString("vi-VN", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          }),
+                                          gioketthuc: new Date(
+                                            ticket.gioketthuc
+                                          ).toLocaleTimeString("vi-VN", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          }),
+                                          maghe: ticket.maghe,
+                                          giave:
+                                            ticket.giave.toLocaleString(
+                                              "vi-VN"
+                                            ) + " VND",
+                                        })
+                                      )}&size=250`}
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             </div>

@@ -7,7 +7,6 @@ import {
   getFeaturedMovies,
   getNowShowingMovies,
   getUpcomingMovies,
-  searchMovies,
   getShowtimesByMovie,
   getShowtimeDetail,
   getRoomDetail,
@@ -176,6 +175,9 @@ const HomePage = () => {
             }`}
             style={{
               backgroundImage: `url(${movie.POSTER})`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
               display: index === currentSlide ? "block" : "none",
             }}
           >
@@ -202,8 +204,58 @@ const HomePage = () => {
               </div>
             </div>
             {/* Slider Controls */}
-            <button className="slider-btn prev" onClick={prevSlide}></button>
-            <button className="slider-btn next" onClick={nextSlide}></button>
+            <button
+              className="slider-btn prev"
+              onClick={prevSlide}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "20px",
+                transform: "translateY(-50%)",
+                background: "#d3d3d3",
+                color: "black",
+                border: "none",
+                borderRadius: "50%",
+                padding: "15px",
+                cursor: "pointer",
+                fontSize: "24px",
+                zIndex: 10,
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "50px",
+                height: "50px",
+              }}
+            >
+              {"<"}
+            </button>
+            <button
+              className="slider-btn next"
+              onClick={nextSlide}
+              style={{
+                position: "absolute",
+                top: "50%",
+                right: "20px",
+                transform: "translateY(-50%)",
+                background: "#d3d3d3",
+                color: "black",
+                border: "none",
+                borderRadius: "50%",
+                padding: "15px",
+                cursor: "pointer",
+                fontSize: "24px",
+                zIndex: 10,
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "50px",
+                height: "50px",
+              }}
+            >
+              {">"}
+            </button>
             {/* Slider Indicators */}
             <div className="slider-indicators">
               {featuredMovies.map((_, idx) => (

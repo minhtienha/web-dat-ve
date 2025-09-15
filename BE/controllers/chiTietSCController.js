@@ -3,13 +3,102 @@ const ChiTietSuat = require("../models/Chi_tiet_suat_chieu");
 // [GET] Lấy danh sách chi tiết suất chiếu
 exports.layDanhSachChiTietSuat = async (req, res) => {
   try {
-    const danhSachChiTietSuat = await ChiTietSuat.find().populate(
-      "MAPHIM MASUAT"
-    );
+    const danhSachChiTietSuat = await ChiTietSuat.find()
+      .populate({
+        path: "MAPHIM",
+        model: "Phim",
+        localField: "MAPHIM",
+        foreignField: "MAPHIM",
+        select: "TENPHIM THOILUONG",
+      })
+      .populate({
+        path: "MASUAT",
+        model: "SuatChieu",
+        localField: "MASUAT",
+        foreignField: "MASUAT",
+        select: "MAPHONG NGAYCHIEU",
+      });
     res.json(danhSachChiTietSuat);
   } catch (err) {
     res.status(500).json({
       error: "Lỗi khi lấy danh sách chi tiết suất chiếu",
+      details: err.message,
+    });
+  }
+};
+
+// [GET] Lấy chi tiết suất chiếu theo MASUAT
+exports.layChiTietSuatChieuTheoMaSuat = async (req, res) => {
+  const { masuat } = req.params;
+  try {
+    const chiTietSuat = await ChiTietSuat.find({ MASUAT: masuat })
+      .populate({
+        path: "MAPHIM",
+        model: "Phim",
+        localField: "MAPHIM",
+        foreignField: "MAPHIM",
+        select: "TENPHIM THOILUONG",
+      })
+      .populate({
+        path: "MASUAT",
+        model: "SuatChieu",
+        localField: "MASUAT",
+        foreignField: "MASUAT",
+        select: "MAPHONG NGAYCHIEU",
+      });
+    if (!chiTietSuat.length) {
+      return res
+        .status(404)
+        .json({ error: "Không tìm thấy suất chiếu cho mã suất này" });
+    }
+    res.json(chiTietSuat);
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: "Lỗi khi lấy chi tiết suất chiếu", details: err.message });
+  }
+};
+
+// [GET] Lấy tất cả chi tiết suất chiếu kèm phim, phòng, rạp
+exports.layTatCaChiTietDayDu = async (req, res) => {
+  try {
+    const chiTiet = await ChiTietSuat.find()
+      .populate({
+        path: "MAPHIM",
+        model: "Phim",
+        localField: "MAPHIM",
+        foreignField: "MAPHIM",
+        justOne: true,
+        select: "MAPHIM TENPHIM",
+      })
+      .populate({
+        path: "MASUAT",
+        model: "SuatChieu",
+        localField: "MASUAT",
+        foreignField: "MASUAT",
+        justOne: true,
+        select: "MASUAT NGAYCHIEU MAPHONG",
+        populate: {
+          path: "MAPHONG",
+          model: "PhongChieu",
+          localField: "MASUAT.MAPHONG",
+          foreignField: "MAPHONG",
+          justOne: true,
+          select: "MAPHONG TENPHONG MARAP",
+          populate: {
+            path: "MARAP",
+            model: "RapChieu",
+            localField: "MAPHONG.MARAP",
+            foreignField: "MARAP",
+            justOne: true,
+            select: "MARAP TENRAP",
+          },
+        },
+      });
+    res.json(chiTiet);
+  } catch (err) {
+    res.status(500).json({
+      error: "Lỗi khi lấy chi tiết suất chiếu đầy đủ",
       details: err.message,
     });
   }

@@ -19,9 +19,11 @@ const apiRequest = async (method, url, data = null, params = null) => {
       headers: {
         "Content-Type": "application/json",
       },
+      // Removed responseType: "text" to let axios handle JSON parsing automatically
     };
 
     const response = await axios(config);
+    // Axios automatically parses JSON response
     return response.data;
   } catch (error) {
     handleError(error, `Error calling ${method.toUpperCase()} ${url}`);
@@ -35,6 +37,23 @@ export const register = async (userData) => {
 
 export const login = async (userData) => {
   return apiRequest("POST", "/nguoidung/dang-nhap", userData);
+};
+
+// ==================== USER MANAGEMENT ====================
+export const getUsers = async () => {
+  return apiRequest("GET", "/nguoidung/danh-sach");
+};
+
+export const addUser = async (userData) => {
+  return apiRequest("POST", "/nguoidung/them", userData);
+};
+
+export const deleteUser = async (id) => {
+  return apiRequest("DELETE", `/nguoidung/xoa/${id}`);
+};
+
+export const updatePasswordByEmail = async (payload) => {
+  return apiRequest("PUT", "/nguoidung/cap-nhat-mat-khau", payload);
 };
 
 // ==================== USER MANAGEMENT ====================
@@ -69,6 +88,18 @@ export const getUpcomingMovies = async () => {
 
 export const searchMovies = (tenPhim) => {
   return apiRequest("GET", "/phim/tim-kiem", null, { tenPhim });
+};
+
+export const addMovie = async (movieData) => {
+  return apiRequest("POST", "/phim/them-phim", movieData);
+};
+
+export const updateMovie = async (maphim, movieData) => {
+  return apiRequest("PUT", `/phim/cap-nhat/${maphim}`, movieData);
+};
+
+export const deleteMovie = async (maphim) => {
+  return apiRequest("DELETE", `/phim/xoa-phim/${maphim}`);
 };
 
 // ==================== MOVIE DETAILS ====================
@@ -112,13 +143,41 @@ export const getReviewsByUser = async (makh) => {
 };
 
 // ==================== SHOWTIMES & BOOKING ====================
+// New merged endpoints - replaces both /suatchieu and /chitietsuatchieu
 export const getShowtimesByMovie = (movieId) => {
-  return apiRequest("GET", `/chitietsuatchieu/theo-phim/${movieId}`);
+  return apiRequest("GET", `/suatchieu/theo-phim/${movieId}`);
 };
 
 export const getShowtimeDetail = (maSuat) => {
   return apiRequest("GET", `/suatchieu/chi-tiet/${maSuat}`);
 };
+
+export const getShows = async () => {
+  return apiRequest("GET", "/suatchieu/danh-sach");
+};
+
+export const getShowDetails = async (masuat) => {
+  return apiRequest("GET", `/suatchieu/chi-tiet/${masuat}`);
+};
+
+export const addShow = async (showData) => {
+  return apiRequest("POST", "/suatchieu/them-suat-chieu", showData);
+};
+
+export const updateShow = async (masuat, showData) => {
+  return apiRequest("PUT", `/suatchieu/cap-nhat/${masuat}`, showData);
+};
+
+export const deleteShow = async (masuat) => {
+  return apiRequest("DELETE", `/suatchieu/xoa-suat-chieu/${masuat}`);
+};
+
+export const getAllShowDetails = async () => {
+  return apiRequest("GET", "/suatchieu/day-du");
+};
+
+// Note: The following functions are no longer needed as the functionality is now merged
+// into the main showtime operations. All showtime details are now part of the showtime object.
 
 export const getRoomDetail = (maPhong) => {
   return apiRequest("GET", `/phongchieu/chi-tiet/${maPhong}`);
@@ -137,27 +196,52 @@ export const CheckTicketBooked = async (makh) => {
   return apiRequest("GET", `/ve/lay-ve-theo-makh/${makh}`);
 };
 
+export const getAllTickets = async () => {
+  return apiRequest("GET", "/ve/danh-sach");
+};
+
+export const getMoviesForFilter = async () => {
+  return apiRequest("GET", "/phim/danh-sach");
+};
+
+export const getTheatersForFilter = async () => {
+  return apiRequest("GET", "/rapchieu/danh-sach");
+};
+
 // ==================== THEATERS ====================
 export const getTheaters = async () => {
   return apiRequest("GET", "/rapchieu/danh-sach");
 };
 
-export const getTheaterById = async (id) => {
-  return apiRequest("GET", `/rapchieu/chi-tiet/${id}`);
+export const getTheaterByMarap = async (marap) => {
+  return apiRequest("GET", `/rapchieu/chi-tiet/${marap}`);
 };
 
-export const getMaPhongChieu = async (
-  movieTitle,
-  ngayChieu,
-  tinhThanh,
-  tenRap,
-  gioBatDau
-) => {
-  return apiRequest("GET", "/maphong", null, {
-    tenphim: movieTitle,
-    ngaychieu: ngayChieu,
-    tinhthanh: tinhThanh,
-    tenrap: tenRap,
-    giobatdau: gioBatDau,
-  });
+export const addTheater = async (theaterData) => {
+  return apiRequest("POST", "/rapchieu/them-rap", theaterData);
+};
+
+export const updateTheater = async (marap, theaterData) => {
+  return apiRequest("PUT", `/rapchieu/cap-nhat/${marap}`, theaterData);
+};
+
+export const deleteTheater = async (marap) => {
+  return apiRequest("DELETE", `/rapchieu/xoa-rap/${marap}`);
+};
+
+// ==================== ROOMS ====================
+export const getRoomsByTheater = async (marap) => {
+  return apiRequest("GET", `/phongchieu/danh-sach-theo-rap/${marap}`);
+};
+
+export const addRoom = async (roomData) => {
+  return apiRequest("POST", "/phongchieu/them-phong-chieu", roomData);
+};
+
+export const updateRoom = async (maphong, roomData) => {
+  return apiRequest("PUT", `/phongchieu/cap-nhat/${maphong}`, roomData);
+};
+
+export const deleteRoom = async (maphong) => {
+  return apiRequest("DELETE", `/phongchieu/xoa-phong-chieu/${maphong}`);
 };

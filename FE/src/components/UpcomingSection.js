@@ -47,7 +47,7 @@ const UpcomingSection = ({ upcomingMovies, handleBuyTicketClick }) => {
         </div>
         {upcomingMovies.length === 0 ? (
           <div className="homepage-empty text-center py-4 col-span-full">
-            Không tìm thấy phim phù hợp.
+            Hiện tại chưa có phim nào sắp chiếu.
           </div>
         ) : (
           <>

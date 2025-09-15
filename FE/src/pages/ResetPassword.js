@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { auth } from "../config/firebase";
-import { confirmPasswordReset } from "firebase/auth";
+import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
+import { updatePasswordByEmail } from "../services/api";
+import { validateInput } from "../utils/validation";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -9,8 +11,26 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { oobCode } = useParams();
+  const [email, setEmail] = useState("");
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const oobCode = searchParams.get("oobCode");
+
+  useEffect(() => {
+    const getEmailFromCode = async () => {
+      try {
+        const emailFromCode = await verifyPasswordResetCode(auth, oobCode);
+        setEmail(emailFromCode);
+      } catch (error) {
+        setError("Mã đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+      }
+    };
+
+    if (oobCode) {
+      getEmailFromCode();
+    }
+  }, [oobCode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,8 +41,9 @@ const ResetPassword = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Mật khẩu phải có ít nhất 6 ký tự!");
+    const passwordValidation = validateInput("password", newPassword);
+    if (!passwordValidation.isValid) {
+      setError(passwordValidation.message);
       return;
     }
 
@@ -30,6 +51,8 @@ const ResetPassword = () => {
 
     try {
       await confirmPasswordReset(auth, oobCode, newPassword);
+      // Gọi API backend để cập nhật mật khẩu trong database
+      await updatePasswordByEmail({ email, matkhau: newPassword });
       setSuccess(true);
 
       // Redirect về localhost sau 2 giây

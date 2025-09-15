@@ -144,3 +144,27 @@ exports.xoaPhongChieu = async (req, res) => {
       .json({ error: "Lỗi khi xóa phòng chiếu", details: err.message });
   }
 };
+
+// [GET] Lấy danh sách phòng chiếu theo mã rạp
+exports.layDanhSachPhongChieuTheoRap = async (req, res) => {
+  const { marap } = req.params;
+  try {
+    const danhSachPhongChieu = await PhongChieu.find({ MARAP: marap }).populate(
+      {
+        path: "MARAP",
+        model: "RapChieu",
+        localField: "MARAP",
+        foreignField: "MARAP",
+        select: "MARAP TENRAP DIACHI",
+      }
+    );
+
+    // Trả về danh sách rỗng thay vì 404 nếu không có phòng
+    res.json(danhSachPhongChieu);
+  } catch (err) {
+    res.status(500).json({
+      error: "Lỗi khi lấy danh sách phòng chiếu theo rạp",
+      details: err.message,
+    });
+  }
+};

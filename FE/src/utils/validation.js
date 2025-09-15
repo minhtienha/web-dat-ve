@@ -7,9 +7,9 @@ export const validationRules = {
     required: true,
   },
   password: {
-    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/,
-    message: "Mật khẩu cần ít nhất 8 ký tự, có chữ hoa, thường và số",
-    minLength: 8,
+    pattern: /^.{6,}$/,
+    message: "Mật khẩu cần ít nhất 6 ký tự",
+    minLength: 6,
     required: true,
   },
   phone: {

@@ -105,7 +105,7 @@ const Header = () => {
                 className="header-account cursor-pointer hover:text-red-800"
                 onClick={() => handleNavigate("/account")}
               >
-                {user.TENKH}
+                {user.HOTEN || "Người dùng"}
               </span>
               <button
                 className="header-signout text-white hover:text-gray-300 px-3 py-1"
@@ -127,8 +127,14 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden fixed top-16 left-0 right-0 bg-gray-900 shadow-lg z-50 border-t border-gray-700">
-          <nav className="flex flex-col p-4 space-y-1">
+        <div
+          className="md:hidden fixed top-16 left-0 right-0 bg-gray-900 shadow-lg z-50 border-t border-gray-700"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <nav
+            className="flex flex-col p-4 space-y-1"
+            onClick={(e) => e.stopPropagation()}
+          >
             <span
               onClick={() => handleNavigate("/")}
               className="header-link py-3 px-4 hover:bg-gray-800 rounded cursor-pointer text-white block"
@@ -159,7 +165,7 @@ const Header = () => {
                   onClick={() => handleNavigate("/account")}
                   className="header-link py-3 px-4 hover:bg-gray-800 rounded cursor-pointer text-white block"
                 >
-                  {user.TENKH}
+                  {user.HOTEN || "Người dùng"}
                 </span>
                 <button
                   className="header-signout text-left py-3 px-4 hover:bg-gray-800 rounded text-white w-full text-left"

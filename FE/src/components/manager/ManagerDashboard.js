@@ -1,22 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
-import MovieManager from "./MovieManager";
-import ShowManager from "./ShowManager";
-import HistoryManager from "./HistoryManager";
-import TheaterManager from "./TheaterManager";
-import TheaterAdminManager from "./TheaterAdminManager";
-import RoomManager from "./RoomManager";
+import { useNavigate } from "react-router-dom";
+import { getTheaterByMarap } from "../../services/api";
+import ManagerMovieManager from "./ManagerMovieManager";
+import ManagerShowManager from "./ManagerShowManager";
+import ManagerHistoryManager from "./ManagerHistoryManager";
+import ManagerRoomManager from "./ManagerRoomManager";
 
-const AdminDashboard = () => {
+const ManagerDashboard = () => {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [theater, setTheater] = useState(null);
   const [tab, setTab] = useState("movies");
+
+  useEffect(() => {
+    if (!user || user.VAITRO !== "manager") {
+      navigate("/");
+      return;
+    }
+    if (user.MARAP) {
+      getTheaterByMarap(user.MARAP)
+        .then((data) => setTheater(data))
+        .catch(() => setTheater(null));
+    }
+  }, [user, navigate]);
+
+  if (!user || user.VAITRO !== "manager") {
+    return null;
+  }
 
   return (
     <div className="h-screen bg-gray-100 flex flex-col">
       {/* Header */}
       <div className="bg-white shadow p-4 flex justify-end items-center">
         <span className="text-lg font-semibold">
-          Xin chào, {user?.HOTEN || "Admin"}
+          Xin chào, {user?.HOTEN || "Quản lý"}
         </span>
         <span className="mx-2"> | </span>
         <button
@@ -51,30 +69,12 @@ const AdminDashboard = () => {
           </button>
           <hr className="my-2 border-gray-300" />
           <button
-            onClick={() => setTab("cinemas")}
-            className={`w-full text-left py-2 ${
-              tab === "cinemas" ? "font-bold text-yellow-400" : "text-white"
-            }`}
-          >
-            Quản lý rạp
-          </button>
-          <hr className="my-2 border-gray-300" />
-          <button
             onClick={() => setTab("rooms")}
             className={`w-full text-left py-2 ${
               tab === "rooms" ? "font-bold text-yellow-400" : "text-white"
             }`}
           >
             Quản lý phòng chiếu
-          </button>
-          <hr className="my-2 border-gray-300" />
-          <button
-            onClick={() => setTab("admins")}
-            className={`w-full text-left py-2 ${
-              tab === "admins" ? "font-bold text-yellow-400" : "text-white"
-            }`}
-          >
-            Quản lý quản trị viên rạp
           </button>
           <hr className="my-2 border-gray-300" />
           <button
@@ -90,17 +90,14 @@ const AdminDashboard = () => {
 
         {/* Main content cuộn nếu dài */}
         <div className="flex-1 overflow-y-auto p-8">
-          {/* <h1 className="text-3xl font-bold mb-6">Quản trị hệ thống</h1> */}
-          {tab === "movies" && <MovieManager />}
-          {tab === "shows" && <ShowManager />}
-          {tab === "cinemas" && <TheaterManager />}
-          {tab === "rooms" && <RoomManager />}
-          {tab === "admins" && <TheaterAdminManager />}
-          {tab === "history" && <HistoryManager />}
+          {tab === "movies" && <ManagerMovieManager />}
+          {tab === "shows" && <ManagerShowManager />}
+          {tab === "rooms" && <ManagerRoomManager />}
+          {tab === "history" && <ManagerHistoryManager />}
         </div>
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default ManagerDashboard;

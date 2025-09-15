@@ -4,6 +4,7 @@ import axios from "axios";
 import screenImg from "../assets/images/manhinh.png";
 import { createTicket } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
+import SimplePopup from "../components/SimplePopup";
 
 export default function BookingPage() {
   const location = useLocation();
@@ -16,8 +17,8 @@ export default function BookingPage() {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("card");
-  const [createdTickets, setCreatedTickets] = useState([]);
   const [isPaying, setIsPaying] = useState(false);
+  const [popupMessage, setPopupMessage] = useState(null);
   const { user } = useContext(AuthContext);
 
   const ticketPrice = 120000;
@@ -77,6 +78,10 @@ export default function BookingPage() {
     );
   };
 
+  const handleClosePopup = () => {
+    setPopupMessage(null);
+  };
+
   const handleConfirmPayment = async () => {
     try {
       if (!user?.MAKH) {
@@ -96,6 +101,39 @@ export default function BookingPage() {
         .filter((seat) => selectedSeats.includes(`${seat.HANG}${seat.SO}`))
         .map((seat) => seat.MAGHE);
 
+      if (paymentMethod === "momo") {
+        // Gọi API backend tạo payment MoMo
+        const amountStr = (ticketPrice * selectedSeats.length).toString();
+        const orderId = "order_" + new Date().getTime();
+        const orderInfo = `Thanh toán vé phim ${movie.title}`;
+        const redirectUrl = "http://localhost:3000/booking-success";
+        const ipnUrl = "http://localhost:5000/api/thanh-toan/momo/callback";
+
+        try {
+          const res = await axios.post(
+            "http://localhost:5000/api/thanh-toan/momo",
+            {
+              amount: amountStr,
+              orderId,
+              orderInfo,
+              redirectUrl,
+              ipnUrl,
+            }
+          );
+          if (res.data && res.data.payUrl) {
+            window.location.href = res.data.payUrl; // Redirect sang MoMo
+          } else {
+            alert("Không nhận được đường dẫn thanh toán MoMo");
+          }
+        } catch (error) {
+          alert("Lỗi khi tạo thanh toán MoMo: " + error.message);
+        } finally {
+          setIsPaying(false);
+        }
+        return;
+      }
+
+      // Nếu không phải momo, xử lý thanh toán bình thường
       const payload = {
         MASUAT: maSuat,
         MAKH: user.MAKH,
@@ -103,15 +141,18 @@ export default function BookingPage() {
         GIAVE: ticketPrice,
       };
 
-      const result = await createTicket(payload);
-      setCreatedTickets(result?.tickets || []);
-      setStep(3);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.details || err.message || "Thanh toán thất bại";
-      alert(msg);
+      try {
+        const result = await createTicket(payload);
+        setStep(3);
+      } catch (err) {
+        if (!err.response) {
+          setPopupMessage("Ghế đã được đặt, vui lòng chọn ghế khác!");
+        }
+      }
     } finally {
-      setIsPaying(false);
+      if (paymentMethod !== "momo") {
+        setIsPaying(false);
+      }
     }
   };
 
@@ -184,39 +225,7 @@ export default function BookingPage() {
           <div className="mb-2">
             <b>Tổng tiền:</b> {total.toLocaleString()}đ
           </div>
-          {createdTickets?.length > 0 && (
-            <div className="mt-4 text-left">
-              <div className="font-semibold mb-2">Mã vé của bạn:</div>
-              <ul className="space-y-3">
-                {createdTickets.map((t) => (
-                  <li
-                    key={t.MAVE}
-                    className="flex items-center justify-between gap-4 border rounded p-2"
-                  >
-                    <div>
-                      <div>
-                        MAVE: <b>{t.MAVE}</b>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Suất: {t.MASUAT} • Khách: {t.MAKH}
-                      </div>
-                    </div>
-                    <img
-                      alt={`QR ${t.MAVE}`}
-                      className="w-20 h-20"
-                      src={`https://quickchart.io/qr?text=${encodeURIComponent(
-                        JSON.stringify({
-                          mave: t.MAVE,
-                          masuat: t.MASUAT,
-                          makh: t.MAKH,
-                        })
-                      )}&size=200`}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+
           <button className="btn-red mt-4" onClick={() => navigate("/")}>
             Về trang chủ
           </button>
@@ -417,6 +426,14 @@ export default function BookingPage() {
           </aside>
         </div>
       </div>
+      {popupMessage && (
+        <SimplePopup
+          message={popupMessage}
+          onConfirm={handleClosePopup}
+          type="info"
+          confirmText="Đóng"
+        />
+      )}
     </div>
   );
 }

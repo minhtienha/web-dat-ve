@@ -60,7 +60,7 @@ const Register = () => {
 
     try {
       const account = {
-        TENKH: formData.name,
+        HOTEN: formData.name,
         EMAIL: formData.email,
         SDT: formData.phone,
         MATKHAU: formData.password,

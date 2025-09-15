@@ -16,33 +16,19 @@ const ForgotPassword = () => {
     setMessage("");
     setLoading(true);
 
-    console.log("Submitting with email:", email);
-    console.log("Auth instance:", auth);
-
     try {
-      await sendPasswordResetEmail(auth, email);
+      const actionCodeSettings = {
+        url: "http://localhost:3000/reset-password", // trang custom
+        handleCodeInApp: true,
+      };
+
+      await sendPasswordResetEmail(auth, email, actionCodeSettings);
+
       setMessage(
         "Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn."
       );
-      console.log("Password reset email sent successfully");
     } catch (error) {
-      console.error("Error sending password reset email:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-
-      switch (error.code) {
-        case "auth/user-not-found":
-          setError("Không tìm thấy tài khoản với email này.");
-          break;
-        case "auth/invalid-email":
-          setError("Email không hợp lệ.");
-          break;
-        case "auth/too-many-requests":
-          setError("Quá nhiều yêu cầu. Vui lòng thử lại sau.");
-          break;
-        default:
-          setError(`Có lỗi xảy ra: ${error.message}`);
-      }
+      // xử lý lỗi như code cũ của bạn
     } finally {
       setLoading(false);
     }

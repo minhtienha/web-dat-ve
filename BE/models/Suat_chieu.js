@@ -5,10 +5,14 @@ const suatChieuSchema = new mongoose.Schema(
     MASUAT: { type: String, unique: true },
     MAPHONG: { type: String, required: true, ref: "PhongChieu" },
     NGAYCHIEU: { type: Date, required: true },
+    MAPHIM: { type: String, required: true, ref: "Phim" },
+    GIOBATDAU: { type: String, required: true },
+    GIOKETTHUC: { type: String, required: true },
   },
   { strictPopulate: false }
 );
 
+// Auto-generate MASUAT if not provided
 suatChieuSchema.pre("save", async function (next) {
   if (this.isNew && !this.MASUAT) {
     const lastSuat = await mongoose
@@ -22,5 +26,8 @@ suatChieuSchema.pre("save", async function (next) {
   }
   next();
 });
+
+// Index for unique constraint on movie, showtime, and start time
+suatChieuSchema.index({ MAPHIM: 1, MASUAT: 1, GIOBATDAU: 1 }, { unique: true });
 
 module.exports = mongoose.model("SuatChieu", suatChieuSchema, "suat_chieu");

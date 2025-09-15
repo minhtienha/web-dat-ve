@@ -54,7 +54,14 @@ const Signin = () => {
         MATKHAU: formData.password,
       });
       loginContext(response);
-      navigate("/account", { state: { loginSuccess: true } });
+      const role = response.VAITRO;
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "manager") {
+        navigate("/manager");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       setError(
         "Đăng nhập thất bại: " + (error.response?.data?.error || error.message)
