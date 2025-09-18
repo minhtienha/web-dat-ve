@@ -21,7 +21,7 @@ export default function BookingPage() {
   const [popupMessage, setPopupMessage] = useState(null);
   const { user } = useContext(AuthContext);
 
-  const ticketPrice = 120000;
+  const ticketPrice = 1000;
   const total = ticketPrice * selectedSeats.length;
 
   // Lấy dữ liệu ghế từ API (tự resolve MAPHONG nếu thiếu)
@@ -106,8 +106,9 @@ export default function BookingPage() {
         const amountStr = (ticketPrice * selectedSeats.length).toString();
         const orderId = "order_" + new Date().getTime();
         const orderInfo = `Thanh toán vé phim ${movie.title}`;
-        const redirectUrl = "http://localhost:3000/booking-success";
-        const ipnUrl = "http://localhost:5000/api/thanh-toan/momo/callback";
+        const redirectUrl = "http://localhost:3000/";
+        const ipnUrl =
+          "https://99dc4c9b4c4e.ngrok-free.app/api/thanh-toan/momo/callback";
 
         try {
           const res = await axios.post(
@@ -118,10 +119,16 @@ export default function BookingPage() {
               orderInfo,
               redirectUrl,
               ipnUrl,
+              extraData: JSON.stringify({
+                MASUAT: maSuat,
+                MAKH: user.MAKH,
+                GHE_LIST: selectedMagheList,
+                GIAVE: ticketPrice,
+              }),
             }
           );
           if (res.data && res.data.payUrl) {
-            window.location.href = res.data.payUrl; // Redirect sang MoMo
+            window.location.href = res.data.payUrl;
           } else {
             alert("Không nhận được đường dẫn thanh toán MoMo");
           }

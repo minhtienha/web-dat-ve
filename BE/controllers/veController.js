@@ -227,38 +227,6 @@ exports.themVe = async (req, res) => {
   }
 };
 
-// [PUT] Cập nhật vé
-// exports.capNhatVe = async (req, res) => {
-//   const { mave } = req.params;
-//   try {
-//     const veCapNhat = await Ve.findOneAndUpdate({ MAVE: mave }, req.body, {
-//       new: true,
-//     });
-//     if (!veCapNhat) {
-//       return res.status(404).json({ error: "Vé không tồn tại" });
-//     }
-//     res.json(veCapNhat);
-//   } catch (err) {
-//     res
-//       .status(400)
-//       .json({ error: "Không thể cập nhật vé", details: err.message });
-//   }
-// };
-
-// [DELETE] Xóa vé
-// exports.xoaVe = async (req, res) => {
-//   const { mave } = req.params;
-//   try {
-//     const veXoa = await Ve.findOneAndDelete({ MAVE: mave });
-//     if (!veXoa) {
-//       return res.status(404).json({ error: "Vé không tồn tại" });
-//     }
-//     res.json({ message: "Vé đã được xóa thành công" });
-//   } catch (err) {
-//     res.status(500).json({ error: "Lỗi khi xóa vé", details: err.message });
-//   }
-// };
-
 // [POST] Đặt vé (nhiều ghế) và cập nhật trạng thái ghế khi thanh toán thành công
 // Body: { MASUAT: string, MAKH: string, GHE_LIST: string[], GIAVE: number }
 exports.datVeNhieuGhe = async (req, res) => {

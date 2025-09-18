@@ -16,7 +16,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import TheaterPage from "./pages/TheaterPage";
 import MoviesPage from "./pages/MoviesPage";
 import BookingPage from "./pages/BookingPage";
-import BookingSuccess from "./pages/BookingSuccess";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AdminDashboard from "./components/admin/AdminDashboard";
@@ -39,7 +38,6 @@ function AppContent() {
         <Route path="/movies/:id" element={<MovieDetail />} />
         <Route path="/movies" element={<MoviesPage />} />
         <Route path="/booking" element={<BookingPage />} />
-        <Route path="/booking-success" element={<BookingSuccess />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

@@ -1,94 +1,94 @@
 const axios = require("axios");
 const crypto = require("crypto");
+const { datVeNhieuGhe } = require("./veController");
 
-// MoMo parameters
 const partnerCode = "MOMO";
 const accessKey = "F8BBA842ECF85";
-const secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+const endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 const requestType = "captureWallet";
-const extraData = "";
+const defaultRedirectUrl = "http://localhost:3000/";
+const defaultIpnUrl = "http://localhost:5000/api/thanh-toan/momo/callback";
 
-// Function to create MoMo payment
 const createMoMoPayment = async (req, res) => {
   try {
-    const { amount, orderId, orderInfo, redirectUrl, ipnUrl } = req.body;
+    const { amount, orderId, orderInfo, redirectUrl, ipnUrl, extraData } =
+      req.body;
+    const requestId = partnerCode + Date.now();
 
-    const requestId = partnerCode + new Date().getTime();
     const finalOrderId = orderId || requestId;
-    const finalOrderInfo = orderInfo || "pay with MoMo";
-    const finalRedirectUrl =
-      redirectUrl || "http://localhost:3000/booking-success";
-    const finalIpnUrl =
-      ipnUrl || "http://localhost:5000/api/thanh-toan/momo/callback";
+    const rawSignature =
+      `accessKey=${accessKey}` +
+      `&amount=${amount}` +
+      `&extraData=${extraData || ""}` +
+      `&ipnUrl=${ipnUrl || defaultIpnUrl}` +
+      `&orderId=${finalOrderId}` +
+      `&orderInfo=${orderInfo || "Thanh toán với MoMo"}` +
+      `&partnerCode=${partnerCode}` +
+      `&redirectUrl=${redirectUrl || defaultRedirectUrl}` +
+      `&requestId=${requestId}` +
+      `&requestType=${requestType}`;
 
-    // Create raw signature
-    const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${finalIpnUrl}&orderId=${finalOrderId}&orderInfo=${finalOrderInfo}&partnerCode=${partnerCode}&redirectUrl=${finalRedirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-
-    // Generate signature
     const signature = crypto
-      .createHmac("sha256", secretkey)
+      .createHmac("sha256", secretKey)
       .update(rawSignature)
       .digest("hex");
 
-    // Request body
     const requestBody = {
       partnerCode,
       accessKey,
       requestId,
       amount,
       orderId: finalOrderId,
-      orderInfo: finalOrderInfo,
-      redirectUrl: finalRedirectUrl,
-      ipnUrl: finalIpnUrl,
-      extraData,
+      orderInfo: orderInfo || "Thanh toán với MoMo",
+      redirectUrl: redirectUrl || defaultRedirectUrl,
+      ipnUrl: ipnUrl || defaultIpnUrl,
+      extraData: extraData || "",
       requestType,
       signature,
       lang: "vi",
     };
 
-    // Send to MoMo API
-    const response = await axios.post(
-      "https://test-payment.momo.vn/v2/gateway/api/create",
-      requestBody,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await axios.post(endpoint, requestBody, {
+      headers: { "Content-Type": "application/json" },
+    });
 
     res.json(response.data);
   } catch (error) {
-    console.error("MoMo payment error:", error);
-    res.status(500).json({ error: "Failed to create MoMo payment" });
+    console.error("❌ Lỗi tạo thanh toán MoMo:", error.message);
+    res.status(500).json({ error: "Không thể tạo thanh toán MoMo" });
   }
 };
 
-// Function to handle MoMo callback
 const handleMoMoCallback = async (req, res) => {
   try {
-    const { orderId, resultCode, message } = req.body;
-
-    // Verify signature if needed
-    // For simplicity, assume success if resultCode == 0
+    const { orderId, resultCode, extraData } = req.body;
+    console.log("📩 Callback MoMo:", req.body);
 
     if (resultCode === 0) {
-      // Payment successful, process the ticket booking
-      // Here you would call createTicket or similar
-      console.log("Payment successful for order:", orderId);
-      // You can store the orderId and process later
-    } else {
-      console.log("Payment failed for order:", orderId, message);
+      let parsed = {};
+      try {
+        parsed =
+          typeof extraData === "string" ? JSON.parse(extraData) : extraData;
+      } catch {
+        console.error("❌ extraData parse error");
+      }
+
+      await datVeNhieuGhe(
+        { body: parsed },
+        {
+          status: (c) => ({ json: (d) => console.log(`↩️ ${c}:`, d) }),
+        }
+      );
+
+      console.log("✅ Thanh toán thành công:", orderId);
     }
 
-    res.json({ message: "Callback received" });
+    res.json({ message: "Đã xử lý callback MoMo" });
   } catch (error) {
-    console.error("MoMo callback error:", error);
-    res.status(500).json({ error: "Callback processing failed" });
+    console.error("🔥 Lỗi callback MoMo:", error.message);
+    res.status(500).json({ error: "Không thể xử lý callback MoMo" });
   }
 };
 
-module.exports = {
-  createMoMoPayment,
-  handleMoMoCallback,
-};
+module.exports = { createMoMoPayment, handleMoMoCallback };
