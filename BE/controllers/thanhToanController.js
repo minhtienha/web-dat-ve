@@ -6,7 +6,7 @@ const partnerCode = "MOMO";
 const accessKey = "F8BBA842ECF85";
 const secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 const endpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
-const requestType = "captureWallet";
+const requestType = "payWithMethod";
 const defaultRedirectUrl = "http://localhost:3000/";
 const defaultIpnUrl = "http://localhost:5000/api/thanh-toan/momo/callback";
 

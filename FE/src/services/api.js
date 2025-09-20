@@ -5,7 +5,11 @@ const API_BASE_URL = "http://localhost:5000/api";
 // Centralized error handler
 const handleError = (error, customMessage = "API Error") => {
   console.error(`${customMessage}:`, error.response?.data || error.message);
-  throw new Error(error.response?.data?.message || error.message);
+  throw new Error(
+    error.response?.data?.message ||
+      error.response?.data?.error ||
+      error.message
+  );
 };
 
 // Centralized request handler

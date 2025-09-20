@@ -128,7 +128,7 @@ const Header = () => {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div
-          className="md:hidden fixed top-16 left-0 right-0 bg-gray-900 shadow-lg z-50 border-t border-gray-700"
+          className="md:hidden fixed left-0 right-0 bg-gray-900 shadow-lg z-50 border-t border-gray-700"
           onClick={() => setIsMenuOpen(false)}
         >
           <nav

@@ -68,6 +68,21 @@
   padding: 1.5rem;
 }
 
+/* Movie poster pop-out */
+.movie-poster-box {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28), 0 4px 12px rgba(0, 0, 0, 0.18);
+  transform: translateY(8px);
+  background: #0f0f0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.movie-poster-box img {
+  display: block;
+  border-radius: 12px;
+}
+
 /* Button */
 .btn-red {
   background: #e50914;
@@ -98,6 +113,14 @@
   background: #222;
   color: #fff;
 }
+.btn-outline-dark:active {
+  background: #111;
+  color: #fff;
+}
+.btn-outline-dark:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(34, 34, 34, 0.15);
+}
 .btn-back {
   border: 1px solid #e50914;
   color: #e50914;
@@ -112,6 +135,13 @@
   background: #ffeaea;
   color: #b0060f;
 }
+.btn-back:active {
+  background: #ffd0d0;
+}
+.btn-back:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.15);
+}
 .btn-outline {
   border: 1px solid #e50914;
   color: #e50914;
@@ -125,6 +155,31 @@
 .btn-outline:hover {
   background: #ffeaea;
   color: #b0060f;
+}
+
+/* Chip buttons (used for star filters) */
+.btn-chip {
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #374151;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.btn-chip:hover {
+  background: #fff;
+  border-color: #d1d5db;
+}
+.btn-chip.active {
+  background: #e50914;
+  color: #fff;
+  border-color: #e50914;
+}
+.btn-chip:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.15);
 }
 
 /* Review User Avatar */
@@ -157,5 +212,183 @@
   }
   .card-content {
     padding: 0.5rem;
+  }
+}
+
+/* MovieDetail responsive styles */
+@media (max-width: 768px) {
+  /* Hero section */
+  .movie-hero-section {
+    height: 56vh !important;
+    margin-bottom: 1rem !important;
+  }
+  .movie-hero-section img {
+    object-fit: cover;
+    object-position: center top;
+  }
+  .movie-poster-box {
+    width: 32vw !important;
+    max-width: 140px !important;
+    height: auto !important;
+    aspect-ratio: 2/3 !important;
+  }
+
+  /* Movie info */
+  .movie-info-container {
+    padding: 1rem !important;
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0;
+    right: 0;
+    margin: 0 1rem;
+    /* background: rgba(0, 0, 0, 0.6) !important; */
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  }
+  .movie-info-container h1 {
+    font-size: 1.75rem !important;
+    margin-bottom: 0.75rem !important;
+    line-height: 1.2;
+  }
+  .movie-info-container .flex.items-center.space-x-6 {
+    flex-wrap: wrap;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .movie-info-container .flex.items-center.space-x-6 > div {
+    margin-bottom: 0.5rem;
+  }
+  .movie-info-container .flex.flex-wrap.gap-2 {
+    margin-bottom: 1rem !important;
+  }
+  .movie-info-container .buttons {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+  }
+  .movie-info-container .buttons button {
+    flex: 1 1 calc(50% - 0.5rem) !important;
+    max-width: none !important;
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Tabs */
+  .tabs-list {
+    grid-template-columns: repeat(3, 1fr) !important;
+    margin-bottom: 1rem !important;
+  }
+  .tab-trigger {
+    padding: 10px 8px !important;
+    font-size: 0.9rem !important;
+    text-align: center;
+  }
+
+  /* Showtimes */
+  .showtimes-container {
+    padding: 0 1.5rem !important;
+  }
+  .showtime-date-buttons {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: center;
+  }
+  .showtime-date-buttons button {
+    flex: 1 1 30% !important;
+    min-width: 80px !important;
+    font-size: 0.8rem !important;
+    padding: 8px 6px !important;
+    border-radius: 6px !important;
+  }
+  .showtime-list {
+    gap: 1rem !important;
+  }
+  .showtime-list .card {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+  }
+  .showtime-list .card-content {
+    padding: 1.25rem !important;
+  }
+  .showtime-list .card h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .showtime-list .card p {
+    font-size: 0.9rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .showtime-list .btn-outline-dark {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Reviews */
+  .reviews-section {
+    padding: 0 1.5rem !important;
+  }
+  .reviews-section h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .review-item {
+    padding: 1.25rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .review-item .review-header {
+    margin-bottom: 0.75rem !important;
+  }
+  .review-item .review-header .font-semibold {
+    font-size: 1rem !important;
+  }
+  .review-item .review-comment {
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .movie-hero-section {
+    height: 46vh !important;
+  }
+  .movie-info-container h1 {
+    font-size: 1.5rem !important;
+  }
+  .tabs-list {
+    /* Keep three tabs on one row even on very small screens */
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .tab-trigger {
+    padding: 8px 6px !important;
+    font-size: 0.8rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .showtime-date-buttons button {
+    flex: 1 1 45% !important;
+  }
+}
+
+/* Mobile horizontal chip scrolling */
+@media (max-width: 768px) {
+  .star-filter {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.5rem !important;
+  }
+  .star-filter::-webkit-scrollbar {
+    display: none;
+  }
+  .star-filter > span {
+    flex: 0 0 auto;
+  }
+  .star-filter .btn-chip {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 }

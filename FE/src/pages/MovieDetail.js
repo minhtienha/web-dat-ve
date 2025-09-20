@@ -232,6 +232,20 @@ const MovieDetail = () => {
     return `${year}-${month}-${day}`;
   };
 
+  // Thêm hàm kiểm tra suất chiếu đã qua hay chưa
+  const isShowtimeValid = (showtime) => {
+    const now = new Date();
+    const showtimeDate = new Date(showtime.NGAYCHIEU);
+    const [hours, minutes] = showtime.GIOBATDAU.split(":");
+    showtimeDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
+    // Thêm buffer 1 tiếng (3600000 milliseconds)
+    const oneHourBuffer = 3600000;
+    const bufferTime = new Date(now.getTime() + oneHourBuffer);
+
+    return showtimeDate > bufferTime;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -251,7 +265,7 @@ const MovieDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Movie Hero Section */}
-      <section className="relative h-[50vh] overflow-hidden mb-8">
+      <section className="movie-hero-section relative h-[50vh] overflow-hidden mb-8">
         {movie.POSTER ? (
           <img
             src={movie.POSTER}
@@ -276,7 +290,7 @@ const MovieDetail = () => {
           style={{ zIndex: 3 }}
         >
           <div className="container mx-auto flex flex-col md:flex-row items-start md:items-end gap-6">
-            <div className="relative w-48 h-72 flex-shrink-0">
+            <div className="relative w-48 h-72 flex-shrink-0 movie-poster-box">
               {movie.HINHANH ? (
                 <img
                   src={movie.HINHANH[0]}
@@ -289,9 +303,25 @@ const MovieDetail = () => {
                 </div>
               )}
             </div>
-            <div className="text-white flex-1">
-              <h1 className="text-4xl font-bold mb-4">{movie.TENPHIM}</h1>
-              <div className="flex items-center space-x-6 mb-4">
+            {/* Mobile-only rating under poster */}
+            <div className="flex md:hidden items-center space-x-3 mt-2 text-white">
+              <div className="flex items-center space-x-1">
+                <svg
+                  className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                </svg>
+                <span className="font-semibold">
+                  {movie.DANHGIA || "Chưa có đánh giá"}/10
+                </span>
+              </div>
+            </div>
+            <div className="movie-info-container text-white flex-1">
+              <h1 className="hidden md:block text-4xl font-bold mb-4">
+                {movie.TENPHIM}
+              </h1>
+              <div className="hidden md:flex items-center space-x-6 mb-4">
                 <div className="flex items-center space-x-1">
                   <svg
                     className="w-5 h-5 fill-yellow-400 text-yellow-400"
@@ -331,31 +361,31 @@ const MovieDetail = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="hidden md:flex flex-wrap gap-2 mb-4">
                 {movie.THELOAI?.map((g) => (
                   <span key={g} className="badge badge-secondary">
                     {g}
                   </span>
                 ))}
               </div>
-              <div className="flex space-x-4">
+              <div className="buttons flex space-x-4">
                 <button className="btn-red" onClick={handleOpenTrailer}>
                   Xem Trailer
                 </button>
                 <button
-                  className="btn-outline-dark"
+                  className="btn-outline-dark hidden md:inline-flex"
                   onClick={() => setTab("about")}
                 >
                   Thông tin phim
                 </button>
                 <button
-                  className="btn-outline-dark"
+                  className="btn-outline-dark hidden md:inline-flex"
                   onClick={() => setTab("reviews")}
                 >
                   Đánh giá
                 </button>
                 <button
-                  className="btn-back"
+                  className="btn-back hidden md:inline-flex"
                   onClick={() => navigate("/movies")}
                 >
                   Quay lại
@@ -382,7 +412,7 @@ const MovieDetail = () => {
 
         {/* Tab Content */}
         {tab === "showtimes" && (
-          <div className="space-y-6">
+          <div className="showtimes-container space-y-6">
             {movie.SAPCHIEU ? (
               <p className="text-2xl font-bold text-center flex items-center justify-center min-h-[200px]">
                 Phim này chưa khởi chiếu, chưa có suất chiếu.
@@ -410,11 +440,12 @@ const MovieDetail = () => {
                   });
                   const datesWithShows = new Set(
                     showtimes
+                      .filter((s) => isShowtimeValid(s)) // Thêm filter ở đây
                       .map((s) => toLocalDateString(s.NGAYCHIEU))
                       .filter(Boolean)
                   );
                   return (
-                    <div className="flex flex-wrap gap-2 items-center">
+                    <div className="showtime-date-buttons flex flex-wrap gap-2 items-center">
                       {days.map((d) => {
                         const hasShows = datesWithShows.has(d.key);
                         const isActive = selectedDate === d.key;
@@ -451,7 +482,7 @@ const MovieDetail = () => {
 
                   const filtered = showtimes.filter((s) => {
                     const k = toLocalDateString(s.NGAYCHIEU);
-                    return k === selectedDate;
+                    return k === selectedDate && isShowtimeValid(s); // Thêm điều kiện kiểm tra suất chiếu
                   });
 
                   if (filtered.length === 0) {
@@ -477,33 +508,37 @@ const MovieDetail = () => {
                     }, {})
                   );
 
-                  return byTheater.map((th, idx) => (
-                    <div key={idx} className="card mb-4">
-                      <div className="card-content p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">
-                              {th.theater}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {th.location}
-                            </p>
+                  return (
+                    <div className="showtime-list">
+                      {byTheater.map((th, idx) => (
+                        <div key={idx} className="card mb-4">
+                          <div className="card-content p-6">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="font-semibold text-lg">
+                                  {th.theater}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {th.location}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-4">
+                              {th.times.map((st, i) => (
+                                <button
+                                  key={i}
+                                  className="btn-outline-dark"
+                                  onClick={() => handleSelectShowtime(st)}
+                                >
+                                  {st.GIOBATDAU}
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-4">
-                          {th.times.map((st, i) => (
-                            <button
-                              key={i}
-                              className="btn-outline-dark"
-                              onClick={() => handleSelectShowtime(st)}
-                            >
-                              {st.GIOBATDAU}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ));
+                  );
                 })()}
               </>
             )}
@@ -549,16 +584,14 @@ const MovieDetail = () => {
               Phim này chưa khởi chiếu, bạn không thể đánh giá.
             </p>
           ) : (
-            <div className="p-4 bg-white rounded-lg shadow-md">
+            <div className="reviews-section p-4 bg-white rounded-lg shadow-md">
               {/* Lọc đánh giá */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-4 star-filter">
                 <span className="font-semibold">Lọc theo sao:</span>
                 {[0, 5, 4, 3, 2, 1].map((star) => (
                   <button
                     key={star}
-                    className={`px-3 py-1 rounded-full border ${
-                      filter === star ? "bg-red-600 text-white" : "bg-gray-100"
-                    }`}
+                    className={`btn-chip ${filter === star ? "active" : ""}`}
                     onClick={() => setFilter(star)}
                   >
                     {star === 0 ? "Tất cả" : `${star}★`}
@@ -573,9 +606,9 @@ const MovieDetail = () => {
                   .map((review, index) => (
                     <div
                       key={review.id || index}
-                      className="bg-white rounded-lg shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
+                      className="review-item bg-white rounded-lg shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="review-header flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <span className="font-semibold text-gray-800 text-lg">
                             {review.userName}
@@ -600,7 +633,7 @@ const MovieDetail = () => {
                         </div>
                       </div>
                       <div className="flex items-start justify-between gap-4">
-                        <p className="text-gray-600 leading-relaxed">
+                        <p className="review-comment text-gray-600 leading-relaxed">
                           {review.comment}
                         </p>
                         {user?.MAKH === review.userId && (

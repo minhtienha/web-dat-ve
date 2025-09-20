@@ -162,7 +162,8 @@
 
   /* Responsive header adjustments */
   .header-modern {
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: 100;
   }
 

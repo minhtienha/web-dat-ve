@@ -1,4 +1,6 @@
 const NguoiDung = require("../models/Nguoi_dung");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 // Hàm kiểm tra định dạng email
 const isValidEmail = (email) => {
